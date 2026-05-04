@@ -1,3 +1,3 @@
-## Eta USB Kayıt
+## Eta Hafif Mod
 
-Etap akıllı tahtalarda USB ile login olabilmek için USB'leri kaydeden uygulama.
+Etap akıllı tahtalarda kaynak tüketimini tek tıkla düşüren ve sistemi hafifleten uygulama
