@@ -32,6 +32,7 @@ install_data(['export/eta-light-mode.svg'], install_dir: icon_dir)
 ## Sources
 install_subdir('src', install_dir: source_dir)
 install_subdir('ui', install_dir: source_dir)
+install_subdir('data/icons', install_dir : '/usr/share/icons/hicolor/scalable/status', strip_directory: true)
 
 ## Binary
 install_data(['eta-light-mode'], install_dir: binary_dir)

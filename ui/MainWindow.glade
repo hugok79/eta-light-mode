@@ -26,17 +26,67 @@
             <property name="can-focus">False</property>
             <property name="halign">center</property>
             <property name="valign">center</property>
+            <property name="margin-start">14</property>
+            <property name="margin-end">14</property>
+            <property name="margin-top">7</property>
+            <property name="margin-bottom">7</property>
+            <property name="orientation">vertical</property>
             <property name="spacing">11</property>
             <child>
-              <object class="GtkLabel">
+              <object class="GtkImage">
                 <property name="visible">True</property>
                 <property name="can-focus">False</property>
-                <property name="label" translatable="yes">Hafif Mod (Kapalı)</property>
+                <property name="pixel-size">64</property>
+                <property name="icon-name">eta-light-mode-leaf</property>
               </object>
               <packing>
                 <property name="expand">False</property>
                 <property name="fill">True</property>
                 <property name="position">0</property>
+              </packing>
+            </child>
+            <child>
+              <object class="GtkLabel">
+                <property name="visible">True</property>
+                <property name="can-focus">False</property>
+                <property name="label" translatable="yes">Hafif Mod</property>
+                <property name="use-markup">True</property>
+                <style>
+                  <class name="title-2"/>
+                </style>
+              </object>
+              <packing>
+                <property name="expand">False</property>
+                <property name="fill">True</property>
+                <property name="position">1</property>
+              </packing>
+            </child>
+            <child>
+              <object class="GtkSeparator">
+                <property name="visible">True</property>
+                <property name="can-focus">False</property>
+              </object>
+              <packing>
+                <property name="expand">False</property>
+                <property name="fill">True</property>
+                <property name="position">2</property>
+              </packing>
+            </child>
+            <child>
+              <object class="GtkLabel" id="ui_status_label">
+                <property name="visible">True</property>
+                <property name="can-focus">False</property>
+                <property name="label" translatable="yes">Devre Dışı</property>
+                <property name="use-markup">True</property>
+                <style>
+                  <class name="title-4"/>
+                  <class name="green"/>
+                </style>
+              </object>
+              <packing>
+                <property name="expand">False</property>
+                <property name="fill">True</property>
+                <property name="position">3</property>
               </packing>
             </child>
             <child>
@@ -50,7 +100,7 @@
               <packing>
                 <property name="expand">False</property>
                 <property name="fill">True</property>
-                <property name="position">1</property>
+                <property name="position">4</property>
               </packing>
             </child>
           </object>

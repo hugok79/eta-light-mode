@@ -7,6 +7,8 @@ gi.require_version("Gtk", "3.0")
 
 from gi.repository import Gio, Gtk  # noqa
 
+import Cinnamon
+
 
 class MainWindow:
     def __init__(self, application):
@@ -42,56 +44,37 @@ class MainWindow:
         def UI(s):
             return self.builder.get_object(s)
 
-        self.stack = UI("stack")
+        is_light_mode_active = self.is_light_mode_active()
+
+        self.ui_status_label = UI("ui_status_label")
+
+        self.ui_switch = UI("ui_switch")
+        self.ui_switch.set_active(is_light_mode_active)
 
         # Dialog:
         self.dialog_about = UI("dialog_about")
 
     def define_variables(self):
-        self.cinnamon_gsettings = Gio.Settings.new("org.cinnamon")
-        self.muffin_gsettings = Gio.Settings.new("org.cinnamon.muffin")
-        self.nemo_preferences_gsettings = Gio.Settings.new("org.nemo.preferences")
+        pass
 
     # == FUNCTIONS ==
-    def set_effects(self, value):
-        if not isinstance(value, bool):
-            return False
-
-        self.cinnamon_gsettings.set_boolean("desktop-effects-workspace", value)
-
-    def set_compositor(self, value):
-        if not isinstance(value, bool):
-            return False
-
-        self.muffin_gsettings.set_boolean("unredirect-fullscreen-windows", value)
-
-    def set_show_thumbnails(self, value):
-        if not isinstance(value, bool):
-            return False
-
-        str_value = "local-only" if value else "never"
-
-        self.nemo_preferences_gsettings.set_string("show-image-thumbnails", str_value)
-
-    def set_show_directory_item_counts(self, value):
-        if not isinstance(value, bool):
-            return False
-
-        str_value = "local-only" if value else "never"
-
-        self.nemo_preferences_gsettings.set_string(
-            "show-directory-item-counts", str_value
-        )
 
     def toggle_light_mode(self, state):
-        self.set_effects(not state)
-        self.set_compositor(state)
-        self.set_show_thumbnails(not state)
-        self.set_show_directory_item_counts(not state)
+        Cinnamon.set_effects(not state)
+        Cinnamon.set_compositor(state)
+        Cinnamon.set_show_thumbnails(not state)
+        Cinnamon.set_show_directory_item_counts(not state)
+
+        label = "Etkin" if state else "Devre Dışı"
+        self.ui_status_label.set_label(label)
+
+    def is_light_mode_active(self):
+        return not Cinnamon.get_effects() and Cinnamon.get_compositor()
 
     # == CALLBACKS ==
     def on_ui_switch_state_set(self, switch, state):
         self.toggle_light_mode(state)
+        print(state)
 
     # About Window
     def on_btn_about_clicked(self, btn):
