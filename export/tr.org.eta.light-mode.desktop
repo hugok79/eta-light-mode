@@ -1,0 +1,16 @@
+[Desktop Entry]
+Name=ETA Light Mode
+Name[tr]=ETA Hafif Mod
+Comment=Make your system lighter with one click.
+Comment[tr]=Sisteminizi tek tıkla hafifletin.
+
+Categories=System;X-Pardus-Apps;
+Keywords=eta;register;usb;eba;
+
+Exec=eta-light-mode
+Icon=eta-light-mode
+
+Terminal=false
+Type=Application
+StartupNotify=true
+X-GNOME-UsesNotifications=true
