@@ -31,12 +31,12 @@
             <property name="margin-top">7</property>
             <property name="margin-bottom">7</property>
             <property name="orientation">vertical</property>
-            <property name="spacing">11</property>
+            <property name="spacing">7</property>
             <child>
               <object class="GtkImage">
                 <property name="visible">True</property>
                 <property name="can-focus">False</property>
-                <property name="pixel-size">64</property>
+                <property name="pixel-size">48</property>
                 <property name="icon-name">eta-light-mode-leaf</property>
               </object>
               <packing>
@@ -49,7 +49,7 @@
               <object class="GtkLabel">
                 <property name="visible">True</property>
                 <property name="can-focus">False</property>
-                <property name="label" translatable="yes">Hafif Mod</property>
+                <property name="label" translatable="yes">Light Mode</property>
                 <property name="use-markup">True</property>
                 <style>
                   <class name="title-2"/>
@@ -62,9 +62,10 @@
               </packing>
             </child>
             <child>
-              <object class="GtkSeparator">
+              <object class="GtkLabel">
                 <property name="visible">True</property>
                 <property name="can-focus">False</property>
+                <property name="label" translatable="yes">Make ETAP Lighter</property>
               </object>
               <packing>
                 <property name="expand">False</property>
@@ -73,15 +74,9 @@
               </packing>
             </child>
             <child>
-              <object class="GtkLabel" id="ui_status_label">
+              <object class="GtkSeparator">
                 <property name="visible">True</property>
                 <property name="can-focus">False</property>
-                <property name="label" translatable="yes">Devre Dışı</property>
-                <property name="use-markup">True</property>
-                <style>
-                  <class name="title-4"/>
-                  <class name="green"/>
-                </style>
               </object>
               <packing>
                 <property name="expand">False</property>
@@ -90,17 +85,89 @@
               </packing>
             </child>
             <child>
-              <object class="GtkSwitch" id="ui_switch">
+              <object class="GtkBox">
                 <property name="visible">True</property>
-                <property name="can-focus">True</property>
-                <property name="halign">center</property>
-                <property name="valign">center</property>
-                <signal name="state-set" handler="on_ui_switch_state_set" swapped="no"/>
+                <property name="can-focus">False</property>
+                <property name="margin-top">7</property>
+                <property name="margin-bottom">7</property>
+                <property name="spacing">14</property>
+                <child>
+                  <object class="GtkLabel" id="ui_status_label">
+                    <property name="visible">True</property>
+                    <property name="can-focus">False</property>
+                    <property name="label" translatable="yes">Disabled</property>
+                    <property name="use-markup">True</property>
+                    <style>
+                      <class name="title-4"/>
+                      <class name="green"/>
+                    </style>
+                  </object>
+                  <packing>
+                    <property name="expand">False</property>
+                    <property name="fill">True</property>
+                    <property name="position">0</property>
+                  </packing>
+                </child>
+                <child>
+                  <object class="GtkSwitch" id="ui_switch">
+                    <property name="visible">True</property>
+                    <property name="can-focus">True</property>
+                    <property name="halign">center</property>
+                    <property name="valign">center</property>
+                  </object>
+                  <packing>
+                    <property name="expand">False</property>
+                    <property name="fill">True</property>
+                    <property name="position">1</property>
+                  </packing>
+                </child>
               </object>
               <packing>
                 <property name="expand">False</property>
                 <property name="fill">True</property>
                 <property name="position">4</property>
+              </packing>
+            </child>
+            <child>
+              <object class="GtkSeparator">
+                <property name="visible">True</property>
+                <property name="can-focus">False</property>
+              </object>
+              <packing>
+                <property name="expand">False</property>
+                <property name="fill">True</property>
+                <property name="position">5</property>
+              </packing>
+            </child>
+            <child>
+              <object class="GtkExpander">
+                <property name="visible">True</property>
+                <property name="can-focus">True</property>
+                <property name="label-fill">True</property>
+                <property name="resize-toplevel">True</property>
+                <child>
+                  <object class="GtkBox" id="ui_box_switches">
+                    <property name="visible">True</property>
+                    <property name="can-focus">False</property>
+                    <property name="orientation">vertical</property>
+                    <property name="spacing">7</property>
+                    <child>
+                      <placeholder/>
+                    </child>
+                  </object>
+                </child>
+                <child type="label">
+                  <object class="GtkLabel">
+                    <property name="visible">True</property>
+                    <property name="can-focus">False</property>
+                    <property name="label" translatable="yes">Details</property>
+                  </object>
+                </child>
+              </object>
+              <packing>
+                <property name="expand">False</property>
+                <property name="fill">True</property>
+                <property name="position">6</property>
               </packing>
             </child>
           </object>
@@ -139,7 +206,7 @@
     <property name="program-name">ETA Light Mode</property>
     <property name="version">-</property>
     <property name="copyright" translatable="yes">©2026 Pardus</property>
-    <property name="comments" translatable="yes">Sisteminizi tek tıkla hafifletin.</property>
+    <property name="comments" translatable="yes">Make ETAP lighter with one click.</property>
     <property name="website">https://github.com/pardus/eta-light-mode</property>
     <property name="authors">Emin Fedar</property>
     <property name="translator-credits" translatable="yes">Emin Fedar</property>

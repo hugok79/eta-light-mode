@@ -2,6 +2,22 @@ import json
 
 from gi.repository import Gio, GLib
 
+# Normal / low-power value pairs for the non-boolean settings.
+FONT_SCALING_LOW, FONT_SCALING_NORMAL = 0.8, 1.0
+_FONT_SCALING_MIN, _FONT_SCALING_MAX = 0.5, 3.0
+PANEL_HEIGHT_LOW, PANEL_HEIGHT_NORMAL = 32, 40
+PANEL_ICON_LOW, PANEL_ICON_NORMAL = 20, 28
+FILE_ICON_LOW, FILE_ICON_NORMAL = "small", "standard"
+ICON_ZOOM_LEVELS = (
+    "smallest",
+    "smaller",
+    "small",
+    "standard",
+    "large",
+    "larger",
+    "largest",
+)
+
 _cinnamon_gsettings = Gio.Settings.new("org.cinnamon")
 _muffin_gsettings = Gio.Settings.new("org.cinnamon.muffin")
 _interface_gsettings = Gio.Settings.new("org.cinnamon.desktop.interface")
@@ -64,10 +80,6 @@ def get_show_directory_item_counts() -> str:
 
 # == Font Scaling ==
 # dconf: org.cinnamon.desktop.interface.text-scaling-factor (double, range 0.5 - 3.0)
-_FONT_SCALING_MIN = 0.5
-_FONT_SCALING_MAX = 3.0
-
-
 def set_font_scaling(value):
     if not isinstance(value, (int, float)) or isinstance(value, bool):
         return False
@@ -183,19 +195,8 @@ def get_app_monitoring() -> bool:
 # - org.nemo.icon-view.default-zoom-level (dosya ikon boyutu), enum:
 #       'smallest', 'smaller', 'small', 'standard', 'large', 'larger', 'largest'
 # - org.nemo.desktop.font (masaüstü dosya font boyutu), e.g. 'Noto Sans 10'
-_ICON_ZOOM_LEVELS = (
-    "smallest",
-    "smaller",
-    "small",
-    "standard",
-    "large",
-    "larger",
-    "largest",
-)
-
-
 def set_file_icon_size(value):
-    if value not in _ICON_ZOOM_LEVELS:
+    if value not in ICON_ZOOM_LEVELS:
         return False
 
     _nemo_icon_view_gsettings.set_string("default-zoom-level", value)
