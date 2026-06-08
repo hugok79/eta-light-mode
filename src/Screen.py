@@ -1,15 +1,22 @@
 from gi.repository import Gio, GLib
 
-# == Monitor Resolution & Refresh Rate Change ==
-# DBUS:
-# - /org/cinnamon/Muffin/DisplayConfig
-# - org.cinnamon.Muffin.DisplayConfig
-# Methods:
-# - GetResources () ↦ (UInt32 serial, Array of [Struct of (UInt32, Int64, Int32, Int32, Int32, Int32, Int32, UInt32, Array of [UInt32], Dict of {String, Variant})] crtcs, Array of [Struct of (UInt32, Int64, Int32, Array of [UInt32], String, Array of [UInt32], Array of [UInt32], Dict of {String, Variant})] outputs, Array of [Struct of (UInt32, Int64, UInt32, UInt32, Double, UInt32)] modes, Int32 max_screen_width, Int32 max_screen_height)
-# - GetCurrentState () ↦ (UInt32 serial, Array of [Struct of (Struct of (String, String, String, String), Array of [Struct of (String, Int32, Int32, Double, Double, Array of [Double], Dict of {String, Variant})], Dict of {String, Variant})] monitors, Array of [Struct of (Int32, Int32, Double, UInt32, Boolean, Array of [Struct of (String, String, String, String)], Dict of {String, Variant})] logical_monitors, Dict of {String, Variant} properties)
-# - ApplyMonitorsConfig (UInt32 serial, UInt32 method, Array of [Struct of (Int32 x, Int32 y, Double scale, UInt32 transform, Boolean primary, Array of [Struct of (String connector, String mode_id, Dict properties)])] logical_monitors, Dict properties)
-#   method: 0 = verify, 1 = temporary (until reboot), 2 = persistent (saved to disk)
+# The two toggles are independent: one switches the resolution, the other the
+# refresh rate. They are combined into a single monitor mode when applied.
+RESOLUTION_LOW = (1600, 900)
+RESOLUTION_NORMAL = (1920, 1080)
+REFRESH_RATE_LOW = 50.0
+REFRESH_RATE_NORMAL = 60.0
 
+# Refresh rates are reported with jitter (e.g. 59.94 instead of 60.0), so we
+# match against the midpoint instead of comparing for equality.
+_REFRESH_MIDPOINT = (REFRESH_RATE_LOW + REFRESH_RATE_NORMAL) / 2
+
+
+# == Monitor Resolution & Refresh Rate Change (Muffin DisplayConfig DBus) ==
+# - /org/cinnamon/Muffin/DisplayConfig  org.cinnamon.Muffin.DisplayConfig
+# - GetCurrentState () -> (serial, monitors, logical_monitors, properties)
+# - ApplyMonitorsConfig (serial, method, logical_monitors, properties)
+#     method: 0 = verify, 1 = temporary (until reboot), 2 = persistent (saved)
 _DISPLAY_CONFIG_NAME = "org.cinnamon.Muffin.DisplayConfig"
 _DISPLAY_CONFIG_PATH = "/org/cinnamon/Muffin/DisplayConfig"
 
@@ -32,7 +39,7 @@ def _get_display_config_proxy():
 
 
 def _get_current_state():
-    # Returns (serial, monitors, logical_monitors, properties) as native Python values.
+    # Returns (serial, monitors, logical_monitors, properties) as native values.
     proxy = _get_display_config_proxy()
     result = proxy.call_sync("GetCurrentState", None, Gio.DBusCallFlags.NONE, -1, None)
     return result.unpack()
@@ -42,7 +49,6 @@ def _get_primary_connector(logical_monitors):
     for x, y, scale, transform, primary, monitors, props in logical_monitors:
         if primary and monitors:
             return monitors[0][0]  # monitor spec -> connector
-    # No primary flagged: fall back to the first available monitor.
     if logical_monitors and logical_monitors[0][5]:
         return logical_monitors[0][5][0][0]
     return None
@@ -74,13 +80,12 @@ def _find_mode_id(monitors, connector, width, height, refresh_rate):
     if not candidates:
         return None
     if refresh_rate is None:
-        # Highest available refresh rate at the requested resolution.
         return max(candidates, key=lambda candidate: candidate[1])[0]
     # Closest matching refresh rate (GetCurrentState reports e.g. 59.95 vs 60.0).
     return min(candidates, key=lambda candidate: abs(candidate[1] - refresh_rate))[0]
 
 
-def get_resolution():
+def _get_current_mode():
     """Current (width, height, refresh_rate) of the primary monitor, or None."""
     try:
         serial, monitors, logical_monitors, props = _get_current_state()
@@ -100,42 +105,26 @@ def get_resolution():
     return None
 
 
-def get_available_resolutions() -> list:
-    """List of available modes of the primary monitor as dicts."""
-    try:
-        serial, monitors, logical_monitors, props = _get_current_state()
-    except GLib.Error:
-        return []
-
-    connector = _get_primary_connector(logical_monitors)
-    if connector is None:
-        return []
-
-    result = []
-    seen = set()
-    for monitor_spec, modes, mprops in monitors:
-        if monitor_spec[0] != connector:
-            continue
-        for mode in modes:
-            key = (mode[1], mode[2], round(mode[3], 2))
-            if key in seen:
-                continue
-            seen.add(key)
-            result.append(
-                {"width": mode[1], "height": mode[2], "refresh_rate": mode[3]}
-            )
-    return result
+def get_resolution():
+    """Current (width, height) of the primary monitor, or None."""
+    current = _get_current_mode()
+    return (current[0], current[1]) if current else None
 
 
-def set_resolution(width, height, refresh_rate=None, persistent=True):
-    """Set the primary monitor to width x height (optionally a refresh rate).
+def get_refresh_rate():
+    """Current refresh rate (Hz) of the primary monitor, or None."""
+    current = _get_current_mode()
+    return current[2] if current else None
+
+
+def set_mode(width, height, refresh_rate) -> bool:
+    """Set the primary monitor to width x height at (about) refresh_rate.
 
     Other monitors keep their current mode. Returns False if the requested mode
-    is unavailable or the call fails.
+    isn't advertised (the 1600x900 modes are registered at session start by
+    /etc/X11/Xsession.d/45custom_xrandr-settings) or the DBus call fails.
     """
     if not isinstance(width, int) or not isinstance(height, int):
-        return False
-    if refresh_rate is not None and not isinstance(refresh_rate, (int, float)):
         return False
 
     try:
@@ -156,23 +145,15 @@ def set_resolution(width, height, refresh_rate=None, persistent=True):
                     return False
                 assignments.append((connector, mode_id, {}))
             new_logical_monitors.append(
-                (
-                    int(x),
-                    int(y),
-                    float(scale),
-                    int(transform),
-                    bool(primary),
-                    assignments,
-                )
+                (int(x), int(y), float(scale), int(transform), bool(primary), assignments)
             )
 
-        method = 2 if persistent else 1
         proxy = _get_display_config_proxy()
         proxy.call_sync(
             "ApplyMonitorsConfig",
             GLib.Variant(
                 "(uua(iiduba(ssa{sv}))a{sv})",
-                (serial, method, new_logical_monitors, {}),
+                (serial, 2, new_logical_monitors, {}),  # method 2 = persistent
             ),
             Gio.DBusCallFlags.NONE,
             -1,
@@ -180,3 +161,37 @@ def set_resolution(width, height, refresh_rate=None, persistent=True):
         )
     except GLib.Error:
         return False
+    return True
+
+
+# == High-level toggles used by the UI ==
+def set_resolution(low: bool) -> bool:
+    """Switch the resolution, keeping the current refresh rate."""
+    width, height = RESOLUTION_LOW if low else RESOLUTION_NORMAL
+    refresh_rate = get_refresh_rate()
+    if refresh_rate is None:
+        refresh_rate = REFRESH_RATE_LOW if low else REFRESH_RATE_NORMAL
+    return set_mode(width, height, refresh_rate)
+
+
+def set_refresh_rate(low: bool) -> bool:
+    """Switch the refresh rate, keeping the current resolution."""
+    refresh_rate = REFRESH_RATE_LOW if low else REFRESH_RATE_NORMAL
+    resolution = get_resolution() or RESOLUTION_NORMAL
+    return set_mode(resolution[0], resolution[1], refresh_rate)
+
+
+def is_low_resolution() -> bool:
+    resolution = get_resolution()
+    if resolution is None:
+        return False
+    return resolution[0] <= RESOLUTION_LOW[0]
+
+
+def is_low_refresh_rate() -> bool:
+    refresh_rate = get_refresh_rate()
+    if refresh_rate is None:
+        return False
+    return refresh_rate < _REFRESH_MIDPOINT
+
+

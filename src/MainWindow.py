@@ -11,6 +11,7 @@ from gi.repository import Gio, GObject, Gtk  # noqa
 from locale import gettext as _
 
 import Cinnamon
+import Screen
 
 
 # == Settings model ==
@@ -87,6 +88,18 @@ SETTINGS = [
         "apply": lambda on: Cinnamon.set_file_icon_size(
             Cinnamon.FILE_ICON_LOW if on else Cinnamon.FILE_ICON_NORMAL
         ),
+    },
+    {
+        "name": "low-resolution",
+        "label": _("Reduce Resolution (1600x900)"),
+        "read": lambda: Screen.is_low_resolution(),
+        "apply": lambda on: Screen.set_resolution(on),
+    },
+    {
+        "name": "low-refresh-rate",
+        "label": _("Reduce Refresh Rate (50 Hz)"),
+        "read": lambda: Screen.is_low_refresh_rate(),
+        "apply": lambda on: Screen.set_refresh_rate(on),
     },
 ]
 

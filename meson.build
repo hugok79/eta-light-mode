@@ -17,6 +17,7 @@ source_dir = join_paths(share, 'eta', meson.project_name()) # /usr/share/eta/eta
 
 icon_dir = join_paths(share, 'icons', 'hicolor', 'scalable', 'apps')
 desktop_file_dir = join_paths(share, 'applications')
+xsession_dir = join_paths(get_option('sysconfdir'), 'X11', 'Xsession.d') # /etc/X11/Xsession.d
 
 # Data
 # subdir('data')
@@ -26,6 +27,11 @@ desktop_file_dir = join_paths(share, 'applications')
 install_data(
   ['export/tr.org.eta.light-mode.desktop'],
   install_dir: desktop_file_dir,
+)
+## Xsession.d snippet (registers the 1600x900 modes before the desktop starts)
+install_data(
+  ['xsession/45custom_xrandr-settings'],
+  install_dir: xsession_dir,
 )
 ## Icon
 install_data(['export/eta-light-mode.svg'], install_dir: icon_dir)

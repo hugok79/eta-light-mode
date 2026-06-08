@@ -1,0 +1,15 @@
+# Eta Light Mode: register the 1600x900 low-power modes before the desktop starts
+# so Cinnamon can restore them from monitors.xml. Sourced by /etc/X11/Xsession,
+
+OUTPUT="$(xrandr | awk '/ connected primary/{print $1; exit}')"
+[ -z "$OUTPUT" ] && OUTPUT="$(xrandr | awk '/ connected/{print $1; exit}')"
+if [ -n "$OUTPUT" ]; then
+    for spec in "1600 900 50" "1600 900 60"; do
+        MODELINE="$(cvt $spec | sed -n 's/^Modeline //p' | tr -d '"')"
+        if [ -n "$MODELINE" ]; then
+            NAME="${MODELINE%% *}"
+            xrandr --newmode $MODELINE 2>/dev/null
+            xrandr --addmode "$OUTPUT" "$NAME" 2>/dev/null
+        fi
+    done
+fi
