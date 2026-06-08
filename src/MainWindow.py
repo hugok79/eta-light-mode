@@ -57,10 +57,10 @@ SETTINGS = [
     },
     {
         "name": "text-scaling",
-        "label": _("Reduce Text Scaling"),
-        "read": lambda: Cinnamon.get_font_scaling() < Cinnamon.FONT_SCALING_NORMAL,
-        "apply": lambda on: Cinnamon.set_font_scaling(
-            Cinnamon.FONT_SCALING_LOW if on else Cinnamon.FONT_SCALING_NORMAL
+        "label": _("Reduce Text Size"),
+        "read": lambda: Cinnamon.get_font() == Cinnamon.FONT_LOW,
+        "apply": lambda on: Cinnamon.set_font_all(
+            Cinnamon.FONT_LOW if on else Cinnamon.FONT_NORMAL
         ),
     },
     {
