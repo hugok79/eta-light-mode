@@ -3,8 +3,8 @@ import json
 from gi.repository import Gio, GLib
 
 # Normal / low-power value pairs for the non-boolean settings.
-FONT_LOW, FONT_NORMAL = "Ubuntu Regular 10", "Ubuntu Regular 11"
-FONT_SCALING_LOW, FONT_SCALING_NORMAL = 0.8, 1.0
+FONT_LOW, FONT_NORMAL = "Ubuntu Regular 9.5", "Ubuntu Regular 11"
+FONT_SCALING_LOW, FONT_SCALING_NORMAL = 0.8, 1.0  # NOT USED, JUST CHANGING FONT SIZE
 _FONT_SCALING_MIN, _FONT_SCALING_MAX = 0.5, 3.0
 PANEL_HEIGHT_LOW, PANEL_HEIGHT_NORMAL = 32, 40
 PANEL_ICON_LOW, PANEL_ICON_NORMAL = 20, 28
