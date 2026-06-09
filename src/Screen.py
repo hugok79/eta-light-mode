@@ -1,3 +1,6 @@
+import os
+import xml.etree.ElementTree as ET
+
 from gi.repository import Gio, GLib
 
 # The two toggles are independent: one switches the resolution, the other the
@@ -17,6 +20,13 @@ _REFRESH_MIDPOINT = (REFRESH_RATE_LOW + REFRESH_RATE_NORMAL) / 2
 # - GetCurrentState () -> (serial, monitors, logical_monitors, properties)
 # - ApplyMonitorsConfig (serial, method, logical_monitors, properties)
 #     method: 0 = verify, 1 = temporary (until reboot), 2 = persistent (saved)
+#
+# We apply with method 1 (TEMPORARY) so Muffin switches silently -- method 2
+# (PERSISTENT) always pops the "keep this configuration?" confirmation dialog.
+# To still survive a reboot we write the chosen mode into ~/.config/monitors.xml
+# ourselves (see _write_monitors_xml); Muffin restores it at startup with no
+# dialog, and since /etc/X11/Xsession.d/45custom_xrandr-settings has already
+# registered the custom 1600x900 modes there is no fallback flicker.
 _DISPLAY_CONFIG_NAME = "org.cinnamon.Muffin.DisplayConfig"
 _DISPLAY_CONFIG_PATH = "/org/cinnamon/Muffin/DisplayConfig"
 
@@ -67,22 +77,24 @@ def _current_mode_id(monitors, connector):
     return None
 
 
-def _find_mode_id(monitors, connector, width, height, refresh_rate):
+def _find_mode(monitors, connector, width, height, refresh_rate):
+    """Return the full mode tuple (id, width, height, refresh, ...) of the best
+    width x height match, or None. The caller needs both the id and the actual
+    refresh rate (to persist it), hence the whole tuple."""
     candidates = []
     for monitor_spec, modes, props in monitors:
         if monitor_spec[0] != connector:
             continue
         for mode in modes:
-            mode_id, mode_w, mode_h, mode_refresh = mode[0], mode[1], mode[2], mode[3]
-            if mode_w == width and mode_h == height:
-                candidates.append((mode_id, mode_refresh))
+            if mode[1] == width and mode[2] == height:
+                candidates.append(mode)
 
     if not candidates:
         return None
     if refresh_rate is None:
-        return max(candidates, key=lambda candidate: candidate[1])[0]
+        return max(candidates, key=lambda mode: mode[3])
     # Closest matching refresh rate (GetCurrentState reports e.g. 59.95 vs 60.0).
-    return min(candidates, key=lambda candidate: abs(candidate[1] - refresh_rate))[0]
+    return min(candidates, key=lambda mode: abs(mode[3] - refresh_rate))
 
 
 def _get_current_mode():
@@ -118,15 +130,13 @@ def get_refresh_rate():
 
 
 def set_mode(width, height, refresh_rate) -> bool:
-    """Set the primary monitor to width x height at (about) refresh_rate.
-
-    Other monitors keep their current mode. Returns False if the requested mode
-    isn't advertised (the 1600x900 modes are registered at session start by
-    /etc/X11/Xsession.d/45custom_xrandr-settings) or the DBus call fails.
-    """
+    """Set the primary monitor to width x height at (about) refresh_rate."""
     if not isinstance(width, int) or not isinstance(height, int):
         return False
 
+    primary_spec = None
+    primary_logical = None
+    applied_rate = refresh_rate
     try:
         serial, monitors, logical_monitors, props = _get_current_state()
 
@@ -136,16 +146,27 @@ def set_mode(width, height, refresh_rate) -> bool:
             for monitor_spec in lm_monitors:
                 connector = monitor_spec[0]
                 if primary:
-                    mode_id = _find_mode_id(
-                        monitors, connector, width, height, refresh_rate
-                    )
+                    mode = _find_mode(monitors, connector, width, height, refresh_rate)
+                    if mode is None:
+                        return False
+                    mode_id = mode[0]
+                    applied_rate = mode[3]
+                    primary_spec = monitor_spec
+                    primary_logical = (int(x), int(y), float(scale))
                 else:
                     mode_id = _current_mode_id(monitors, connector)
-                if mode_id is None:
-                    return False
+                    if mode_id is None:
+                        return False
                 assignments.append((connector, mode_id, {}))
             new_logical_monitors.append(
-                (int(x), int(y), float(scale), int(transform), bool(primary), assignments)
+                (
+                    int(x),
+                    int(y),
+                    float(scale),
+                    int(transform),
+                    bool(primary),
+                    assignments,
+                )
             )
 
         proxy = _get_display_config_proxy()
@@ -153,7 +174,12 @@ def set_mode(width, height, refresh_rate) -> bool:
             "ApplyMonitorsConfig",
             GLib.Variant(
                 "(uua(iiduba(ssa{sv}))a{sv})",
-                (serial, 2, new_logical_monitors, {}),  # method 2 = persistent
+                (
+                    serial,
+                    1,
+                    new_logical_monitors,
+                    {},
+                ),  # method 1 = temporary (no dialog)
             ),
             Gio.DBusCallFlags.NONE,
             -1,
@@ -161,6 +187,11 @@ def set_mode(width, height, refresh_rate) -> bool:
         )
     except GLib.Error:
         return False
+
+    # The live change succeeded; persist it ourselves (a write failure is
+    # non-fatal -- the mode is already applied for this session).
+    if primary_spec is not None:
+        _write_monitors_xml(primary_spec, primary_logical, width, height, applied_rate)
     return True
 
 
@@ -195,3 +226,83 @@ def is_low_refresh_rate() -> bool:
     return refresh_rate < _REFRESH_MIDPOINT
 
 
+# == Persistence: write Cinnamon's monitors.xml directly ==
+# Method 1 doesn't save the config, so we record the chosen mode in the same file
+def _monitors_xml_path() -> str:
+    base = os.environ.get("XDG_CONFIG_HOME") or os.path.expanduser("~/.config")
+    return os.path.join(base, "monitors.xml")
+
+
+def _fmt_scale(scale) -> str:
+    scale = float(scale)
+    return str(int(scale)) if scale.is_integer() else repr(scale)
+
+
+def _set_mode_element(monitor, width, height, rate):
+    """Replace <monitor>'s <mode> with width/height/rate (kept after <monitorspec>)."""
+    old = monitor.find("mode")
+    if old is not None:
+        monitor.remove(old)
+    mode = ET.SubElement(monitor, "mode")
+    ET.SubElement(mode, "width").text = str(width)
+    ET.SubElement(mode, "height").text = str(height)
+    ET.SubElement(mode, "rate").text = repr(
+        float(rate)
+    )  # exact double -> matches at load
+
+
+def _write_monitors_xml(spec, logical, width, height, rate):
+    """Persist the primary monitor's mode to ~/.config/monitors.xml so Muffin
+    restores it at startup. spec=(connector,vendor,product,serial); logical=(x,y,scale)."""
+    connector, vendor, product, serial = spec[0], spec[1], spec[2], spec[3]
+    x, y, scale = logical
+    path = _monitors_xml_path()
+    try:
+        if os.path.exists(path):
+            tree = ET.parse(path)
+            root = tree.getroot()
+        else:
+            root = ET.Element("monitors", version="2")
+            tree = ET.ElementTree(root)
+
+        # Update the configuration whose monitor matches this EDID spec, if any.
+        found = False
+        for configuration in root.findall("configuration"):
+            for monitor in configuration.findall(".//monitor"):
+                mspec = monitor.find("monitorspec")
+                if mspec is None:
+                    continue
+                if (
+                    mspec.findtext("connector") == connector
+                    and mspec.findtext("vendor") == vendor
+                    and mspec.findtext("product") == product
+                    and mspec.findtext("serial") == serial
+                ):
+                    _set_mode_element(monitor, width, height, rate)
+                    sc = configuration.find(".//logicalmonitor/scale")
+                    if sc is not None:
+                        sc.text = _fmt_scale(scale)
+                    found = True
+                    break
+            if found:
+                break
+
+        if not found:
+            configuration = ET.SubElement(root, "configuration")
+            logicalmonitor = ET.SubElement(configuration, "logicalmonitor")
+            ET.SubElement(logicalmonitor, "x").text = str(int(x))
+            ET.SubElement(logicalmonitor, "y").text = str(int(y))
+            ET.SubElement(logicalmonitor, "scale").text = _fmt_scale(scale)
+            ET.SubElement(logicalmonitor, "primary").text = "yes"
+            monitor = ET.SubElement(logicalmonitor, "monitor")
+            mspec = ET.SubElement(monitor, "monitorspec")
+            ET.SubElement(mspec, "connector").text = connector
+            ET.SubElement(mspec, "vendor").text = vendor
+            ET.SubElement(mspec, "product").text = product
+            ET.SubElement(mspec, "serial").text = serial
+            _set_mode_element(monitor, width, height, rate)
+
+        ET.indent(tree, space="  ")
+        tree.write(path, encoding="utf-8", xml_declaration=False)
+    except (OSError, ET.ParseError):
+        pass
