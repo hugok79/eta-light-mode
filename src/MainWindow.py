@@ -41,6 +41,9 @@ class MainWindow:
         # Setup UI
         self.setup_ui()
 
+        # Setup CSS
+        self.setup_css()
+
         # Connect main switch later:
         self.ui_switch.connect("state-set", self.on_ui_switch_state_set)
 
@@ -90,6 +93,18 @@ class MainWindow:
             box.add(Gtk.Label(label=s["label"], hexpand=True, halign="start"))
             box.add(switch)
             self.ui_box_switches.add(box)
+
+    def setup_css(self):
+        css_provider = Gtk.CssProvider()
+        css_provider.load_from_data(b"""
+            .p-7 {padding: 7px;}
+            .p-14 {padding: 14px;}
+            """)
+
+        style = self.window.get_style_context()
+        style.add_provider_for_screen(
+            Gdk.Screen.get_default(), css_provider, Gtk.STYLE_PROVIDER_PRIORITY_USER
+        )
 
     # == FUNCTIONS ==
     def toggle_light_mode(self, state):

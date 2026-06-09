@@ -17,7 +17,7 @@ import Screen
 SETTINGS = [
     {
         "name": "effects",
-        "label": _("Disable Desktop Effects"),
+        "label": _("Disable Effects"),
         "read": lambda: not Cinnamon.get_effects(),
         "apply": lambda on: Cinnamon.set_effects(not on),
     },
@@ -41,7 +41,7 @@ SETTINGS = [
     },
     {
         "name": "app-monitoring",
-        "label": _("Disable App Usage Monitoring"),
+        "label": _("Disable Cinnamon Monitoring"),
         "read": lambda: not Cinnamon.get_app_monitoring(),
         "apply": lambda on: Cinnamon.set_app_monitoring(not on),
     },

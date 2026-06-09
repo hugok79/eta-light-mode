@@ -4,10 +4,10 @@
   <requires lib="gtk+" version="3.24"/>
   <object class="GtkApplicationWindow" id="window">
     <property name="can-focus">False</property>
-    <property name="title" translatable="yes">ETA Hafif Mod</property>
+    <property name="title" translatable="yes">ETA Light Mode</property>
     <property name="resizable">False</property>
     <property name="window-position">center</property>
-    <property name="default-width">250</property>
+    <property name="default-width">400</property>
     <property name="default-height">100</property>
     <property name="icon-name">eta-light-mode</property>
     <child>
@@ -65,23 +65,15 @@
               <object class="GtkLabel">
                 <property name="visible">True</property>
                 <property name="can-focus">False</property>
-                <property name="label" translatable="yes">Make ETAP Lighter</property>
+                <property name="label" translatable="yes">Lighten your system</property>
+                <attributes>
+                  <attribute name="size" value="10000"/>
+                </attributes>
               </object>
               <packing>
                 <property name="expand">False</property>
                 <property name="fill">True</property>
                 <property name="position">2</property>
-              </packing>
-            </child>
-            <child>
-              <object class="GtkSeparator">
-                <property name="visible">True</property>
-                <property name="can-focus">False</property>
-              </object>
-              <packing>
-                <property name="expand">False</property>
-                <property name="fill">True</property>
-                <property name="position">3</property>
               </packing>
             </child>
             <child>
@@ -95,11 +87,12 @@
                   <object class="GtkLabel" id="ui_status_label">
                     <property name="visible">True</property>
                     <property name="can-focus">False</property>
+                    <property name="halign">start</property>
+                    <property name="hexpand">True</property>
                     <property name="label" translatable="yes">Disabled</property>
                     <property name="use-markup">True</property>
                     <style>
                       <class name="title-4"/>
-                      <class name="green"/>
                     </style>
                   </object>
                   <packing>
@@ -121,6 +114,10 @@
                     <property name="position">1</property>
                   </packing>
                 </child>
+                <style>
+                  <class name="card"/>
+                  <class name="p-14"/>
+                </style>
               </object>
               <packing>
                 <property name="expand">False</property>
@@ -129,18 +126,8 @@
               </packing>
             </child>
             <child>
-              <object class="GtkSeparator">
-                <property name="visible">True</property>
-                <property name="can-focus">False</property>
-              </object>
-              <packing>
-                <property name="expand">False</property>
-                <property name="fill">True</property>
-                <property name="position">5</property>
-              </packing>
-            </child>
-            <child>
               <object class="GtkExpander">
+                <property name="width-request">270</property>
                 <property name="visible">True</property>
                 <property name="can-focus">True</property>
                 <property name="label-fill">True</property>
@@ -154,6 +141,10 @@
                     <child>
                       <placeholder/>
                     </child>
+                    <style>
+                      <class name="card"/>
+                      <class name="p-14"/>
+                    </style>
                   </object>
                 </child>
                 <child type="label">
@@ -181,7 +172,7 @@
           <object class="GtkLabel">
             <property name="visible">True</property>
             <property name="can-focus">False</property>
-            <property name="label" translatable="yes">© TÜBİTAK BİLGEM</property>
+            <property name="label">© TÜBİTAK BİLGEM</property>
             <style>
               <class name="dim-label"/>
             </style>
@@ -205,11 +196,11 @@
     <property name="attached-to">window</property>
     <property name="program-name">ETA Light Mode</property>
     <property name="version">-</property>
-    <property name="copyright" translatable="yes">©2026 Pardus</property>
-    <property name="comments" translatable="yes">Make ETAP lighter with one click.</property>
+    <property name="copyright">©2026 TÜBİTAK BİLGEM</property>
+    <property name="comments" translatable="yes">Lighten your Cinnamon DE with one click</property>
     <property name="website">https://github.com/pardus/eta-light-mode</property>
     <property name="authors">Emin Fedar</property>
-    <property name="translator-credits" translatable="yes">Emin Fedar</property>
+    <property name="translator-credits" translatable="yes">translator_credits</property>
     <property name="logo-icon-name">eta-light-mode</property>
     <property name="license-type">gpl-3-0</property>
     <child internal-child="vbox">
