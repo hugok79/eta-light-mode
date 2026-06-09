@@ -23,7 +23,7 @@ SETTINGS = [
     },
     {
         "name": "compositor",
-        "label": _("Unredirect Fullscreen Windows"),
+        "label": _("Direct Render Fullscreen Windows"),
         "read": lambda: Cinnamon.get_compositor(),
         "apply": lambda on: Cinnamon.set_compositor(on),
     },

@@ -1,10 +1,19 @@
 #!/usr/bin/python3
 
 import sys
+
 import gi
 
 gi.require_version("Gtk", "3.0")
+import locale
+
 from gi.repository import Gio, Gtk
+
+# Translation Constants:
+APPNAME = "eta-light-mode"
+TRANSLATIONS_PATH = "/usr/share/locale"
+locale.bindtextdomain(APPNAME, TRANSLATIONS_PATH)
+locale.textdomain(APPNAME)
 
 
 from MainWindow import MainWindow
