@@ -1,4 +1,5 @@
 import os
+import subprocess
 import xml.etree.ElementTree as ET
 
 from gi.repository import Gio, GLib
@@ -129,7 +130,14 @@ def get_refresh_rate():
     return current[2] if current else None
 
 
-def set_mode(width, height, refresh_rate) -> bool:
+XSessionScriptPath = "/etc/X11/Xsession.d/50-eta-light-mode-resolution"
+
+
+def _create_1600_900_mode():
+    return subprocess.run(["bash", XSessionScriptPath])
+
+
+def set_mode(width, height, refresh_rate, second_try=False) -> bool:
     """Set the primary monitor to width x height at (about) refresh_rate."""
     if not isinstance(width, int) or not isinstance(height, int):
         return False
@@ -148,7 +156,22 @@ def set_mode(width, height, refresh_rate) -> bool:
                 if primary:
                     mode = _find_mode(monitors, connector, width, height, refresh_rate)
                     if mode is None:
+                        print(f"{width}x{height}@{refresh_rate} mode not found!")
+                        print(
+                            f"Triggering '{XSessionScriptPath}' to add xrandr mode..."
+                        )
+
+                        p = _create_1600_900_mode()
+                        if p.returncode != 0:
+                            print(f"Couldn't run {XSessionScriptPath}!")
+                            return False
+
+                        if not second_try:
+                            print("Trying again...")
+                            set_mode(width, height, refresh_rate, True)
+
                         return False
+
                     mode_id = mode[0]
                     applied_rate = mode[3]
                     primary_spec = monitor_spec

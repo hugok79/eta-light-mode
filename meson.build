@@ -33,7 +33,7 @@ install_data(
 )
 ## Xsession.d snippet (registers the 1600x900 modes before the desktop starts)
 install_data(
-    ['xsession/45custom_xrandr-settings'],
+    ['xsession/50-eta-light-mode-resolution'],
     install_dir: xsession_dir,
 )
 ## Icon
