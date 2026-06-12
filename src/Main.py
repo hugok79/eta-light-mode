@@ -1,8 +1,11 @@
 #!/usr/bin/python3
 
+import argparse
 import sys
 
 import gi
+
+import Settings
 
 gi.require_version("Gtk", "3.0")
 import locale
@@ -33,5 +36,21 @@ class Application(Gtk.Application):
         self.window = MainWindow(self)
 
 
-app = Application()
-app.run(sys.argv)
+# Argument Parsing
+parser = argparse.ArgumentParser(
+    description="ETA Light Mode, Lighten your cinnamon desktop."
+)
+
+parser.add_argument("-e", "--enable", action="store_true", help="Enable light mode.")
+parser.add_argument("-d", "--disable", action="store_true", help="Disable light mode.")
+args = parser.parse_args()
+
+if args.enable:
+    settings = Settings.LightModeSettings()
+    settings.set_all(True)
+elif args.disable:
+    settings = Settings.LightModeSettings()
+    settings.set_all(False)
+else:
+    app = Application()
+    app.run(sys.argv)
