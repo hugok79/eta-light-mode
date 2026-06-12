@@ -53,23 +53,23 @@ SETTINGS = [
             Cinnamon.FONT_LOW if on else Cinnamon.FONT_NORMAL
         ),
     },
-    {
-        "name": "panel-height",
-        "label": _("Reduce Panel Height"),
-        "read": lambda: Cinnamon.get_panel_height() < Cinnamon.PANEL_HEIGHT_NORMAL,
-        "apply": lambda on: Cinnamon.set_panel_height(
-            Cinnamon.PANEL_HEIGHT_LOW if on else Cinnamon.PANEL_HEIGHT_NORMAL
-        ),
-    },
-    {
-        "name": "panel-icon-size",
-        "label": _("Reduce Panel Icon Size"),
-        "read": lambda: Cinnamon.get_panel_symbolic_icon_size()
-        < Cinnamon.PANEL_ICON_NORMAL,
-        "apply": lambda on: Cinnamon.set_panel_symbolic_icon_size(
-            Cinnamon.PANEL_ICON_LOW if on else Cinnamon.PANEL_ICON_NORMAL
-        ),
-    },
+    # {
+    #     "name": "panel-height",
+    #     "label": _("Reduce Panel Height"),
+    #     "read": lambda: Cinnamon.get_panel_height() < Cinnamon.PANEL_HEIGHT_NORMAL,
+    #     "apply": lambda on: Cinnamon.set_panel_height(
+    #         Cinnamon.PANEL_HEIGHT_LOW if on else Cinnamon.PANEL_HEIGHT_NORMAL
+    #     ),
+    # },
+    # {
+    #     "name": "panel-icon-size",
+    #     "label": _("Reduce Panel Icon Size"),
+    #     "read": lambda: Cinnamon.get_panel_symbolic_icon_size()
+    #     < Cinnamon.PANEL_ICON_NORMAL,
+    #     "apply": lambda on: Cinnamon.set_panel_symbolic_icon_size(
+    #         Cinnamon.PANEL_ICON_LOW if on else Cinnamon.PANEL_ICON_NORMAL
+    #     ),
+    # },
     {
         "name": "file-icon-size",
         "label": _("Smaller File & Desktop Icons"),
