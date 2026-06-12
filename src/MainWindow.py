@@ -90,7 +90,7 @@ class MainWindow:
                 GObject.BindingFlags.BIDIRECTIONAL | GObject.BindingFlags.SYNC_CREATE,
             )
 
-            box.add(Gtk.Label(label=s["label"], hexpand=True, halign="start"))
+            box.add(Gtk.Label(label=_(s["label"]), hexpand=True, halign="start"))
             box.add(switch)
             self.ui_box_switches.add(box)
 
