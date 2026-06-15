@@ -253,7 +253,7 @@ def is_low_refresh_rate() -> bool:
 # Method 1 doesn't save the config, so we record the chosen mode in the same file
 def _monitors_xml_path() -> str:
     base = os.environ.get("XDG_CONFIG_HOME") or os.path.expanduser("~/.config")
-    return os.path.join(base, "monitors.xml")
+    return os.path.join(base, "cinnamon-monitors.xml")
 
 
 def _fmt_scale(scale) -> str:
