@@ -11,9 +11,9 @@ from gi.repository import Gio, GObject, Gtk, Gdk  # noqa
 
 from locale import gettext as _
 
-import Cinnamon
-import Screen
 import Settings
+
+CWD = os.path.dirname(os.path.abspath(__file__))
 
 
 class MainWindow:
@@ -122,17 +122,8 @@ class MainWindow:
         self.ui_status_label.set_label(label)
 
         try:
-            # Reload extensions
-            subprocess.run(
-                "dbus-send --session --dest=org.Cinnamon.LookingGlass --type=method_call"
-                " /org/Cinnamon/LookingGlass org.Cinnamon.LookingGlass.ReloadExtension"
-                " string:'menu@cinnamon.org' string:'APPLET'",
-                shell=True,
-            )
-
-            # Reload nemo desktop
-            subprocess.run("nemo-desktop -q", shell=True)
-            subprocess.run("nohup nemo-desktop > /dev/null 2>&1 &", shell=True)
+            # Refresh desktop
+            subprocess.Popen([f"{CWD}/refresh-desktop.sh"])
         except Exception as e:
             print("{}".format(e))
 
