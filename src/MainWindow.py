@@ -1,6 +1,7 @@
 #!/usr/bin/python3
 
 import os
+import subprocess
 
 import gi
 
@@ -113,6 +114,21 @@ class MainWindow:
 
         label = _("Active") if state else _("Disabled")
         self.ui_status_label.set_label(label)
+
+        try:
+            # Reload extensions
+            subprocess.run(
+                "dbus-send --session --dest=org.Cinnamon.LookingGlass --type=method_call"
+                " /org/Cinnamon/LookingGlass org.Cinnamon.LookingGlass.ReloadExtension"
+                " string:'menu@cinnamon.org' string:'APPLET'",
+                shell=True,
+            )
+
+            # Reload nemo desktop
+            subprocess.run("nemo-desktop -q", shell=True)
+            subprocess.run("nohup nemo-desktop > /dev/null 2>&1 &", shell=True)
+        except Exception as e:
+            print("{}".format(e))
 
     def is_light_mode_active(self):
         return (
