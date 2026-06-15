@@ -33,11 +33,11 @@ class MainWindow:
         self.window.set_application(application)
         self.window.connect("destroy", self.on_destroy)
 
-        # UI Components
-        self.define_components()
-
         # Variables
         self.define_variables()
+
+        # UI Components
+        self.define_components()
 
         # Setup UI
         self.setup_ui()
@@ -69,6 +69,8 @@ class MainWindow:
         self.ui_switch = UI("ui_switch")
         self.ui_switch.set_active(is_light_mode_active)
 
+        self.ui_expander_details = UI("ui_expander_details")
+
         self.ui_box_switches = UI("ui_box_switches")
 
         # Dialog:
@@ -94,6 +96,10 @@ class MainWindow:
             box.add(Gtk.Label(label=_(s["label"]), hexpand=True, halign="start"))
             box.add(switch)
             self.ui_box_switches.add(box)
+
+        # If one disabled, show details:
+        if not self.is_all_settings_active() and self.is_light_mode_active():
+            self.ui_expander_details.set_expanded(True)
 
     def setup_css(self):
         css_provider = Gtk.CssProvider()
@@ -131,11 +137,19 @@ class MainWindow:
             print("{}".format(e))
 
     def is_light_mode_active(self):
-        return (
-            not Cinnamon.get_effects()
-            and Cinnamon.get_compositor()
-            and not Cinnamon.get_app_monitoring()
-        )
+        # Even if one setting is active, show Enabled
+        for s in Settings.SETTINGS:
+            if self.preferences.get_property(s["name"]):
+                return True
+
+        return False
+
+    def is_all_settings_active(self):
+        for s in Settings.SETTINGS:
+            if not self.preferences.get_property(s["name"]):
+                return False
+
+        return True
 
     # == CALLBACKS ==
     def on_ui_switch_state_set(self, switch, state):

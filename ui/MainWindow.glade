@@ -126,7 +126,7 @@
               </packing>
             </child>
             <child>
-              <object class="GtkExpander">
+              <object class="GtkExpander" id="ui_expander_details">
                 <property name="width-request">270</property>
                 <property name="visible">True</property>
                 <property name="can-focus">True</property>
