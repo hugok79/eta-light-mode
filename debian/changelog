@@ -1,3 +1,13 @@
+eta-light-mode (0.2.2) yirmiuc; urgency=medium
+
+  * fix: monitors.xml -> cinnamon-monitors.xml
+  * feat: new icon
+  * fix: reload nemo on toggle
+  * feat: show details if not all details enabled
+  * fix: refresh desktop after toggle
+
+ -- Emin Fedar <emin.fedar@pardus.org.tr>  Mon, 15 Jun 2026 18:19:39 +0300
+
 eta-light-mode (0.2.1) yirmiuc; urgency=medium
 
   * fix: translations on detail rows
