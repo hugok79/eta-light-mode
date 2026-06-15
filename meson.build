@@ -28,7 +28,7 @@ subdir('po')
 # Install
 ## Desktop File
 install_data(
-    ['export/tr.org.eta.light-mode.desktop'],
+    ['data/tr.org.eta.light-mode.desktop'],
     install_dir: desktop_file_dir,
 )
 ## Xsession.d snippet (registers the 1600x900 modes before the desktop starts)
@@ -36,8 +36,6 @@ install_data(
     ['xsession/50-eta-light-mode-resolution'],
     install_dir: xsession_dir,
 )
-## Icon
-install_data(['export/eta-light-mode.svg'], install_dir: icon_dir)
 ## Sources
 install_subdir('src', install_dir: source_dir)
 install_subdir('ui', install_dir: source_dir)
