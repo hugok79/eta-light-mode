@@ -43,6 +43,10 @@ parser = argparse.ArgumentParser(
 
 parser.add_argument("-e", "--enable", action="store_true", help="Enable light mode.")
 parser.add_argument("-d", "--disable", action="store_true", help="Disable light mode.")
+parser.add_argument(
+    "-a", "--apply-config", action="store_true", help="Applies config file to the user."
+)
+
 args = parser.parse_args()
 
 if args.enable:
@@ -51,6 +55,13 @@ if args.enable:
 elif args.disable:
     settings = Settings.LightModeSettings()
     settings.set_all(False)
+elif args.apply_config:
+    settings = Settings.LightModeSettings()
+    try:
+        settings.load_and_apply(Settings.SETTINGS_FILE_PATH)
+    except Exception as e:
+        print(f"Couldn't apply: {e}")
+        pass
 else:
     app = Application()
     app.run(sys.argv)

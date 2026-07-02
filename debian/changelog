@@ -1,3 +1,9 @@
+eta-light-mode (0.2.3) UNRELEASED; urgency=medium
+
+  * feat: apply to all users
+
+ -- Emin Fedar <emin.fedar@pardus.org.tr>  Thu, 02 Jul 2026 15:40:34 +0300
+
 eta-light-mode (0.2.2) yirmiuc; urgency=medium
 
   * fix: monitors.xml -> cinnamon-monitors.xml

@@ -1,5 +1,6 @@
 #!/usr/bin/python3
 
+import json
 import os
 import subprocess
 
@@ -7,13 +8,19 @@ import gi
 
 gi.require_version("Gtk", "3.0")
 
-from gi.repository import Gio, GObject, Gtk, Gdk  # noqa
+from gi.repository import Gio, GLib, GObject, Gtk, Gdk  # noqa
 
 from locale import gettext as _
 
 import Settings
 
 CWD = os.path.dirname(os.path.abspath(__file__))
+
+
+ACTION = f"{CWD}/Action.py"
+AUTOSTART_DST = "/etc/xdg/autostart/tr.org.eta.light-mode-autostart.desktop"
+# Coalesce bursts of setting changes (e.g. the master switch) into one write.
+RESAVE_DEBOUNCE_MS = 400
 
 
 class MainWindow:
@@ -73,12 +80,35 @@ class MainWindow:
 
         self.ui_box_switches = UI("ui_box_switches")
 
+        # "Apply to all users" checkbox. Seed it from the live system state
+        # (autostart entry present == active) with the handler guarded so
+        # seeding doesn't trigger a pkexec call.
+        self.ui_check_apply_all = UI("ui_check_apply_all")
+        self._prevent_apply_all_toggle = True
+        self.ui_check_apply_all.set_active(os.path.exists(AUTOSTART_DST))
+        self._prevent_apply_all_toggle = False
+        self.ui_check_apply_all.connect("toggled", self.on_ui_check_apply_all_toggled)
+
         # Dialog:
         self.dialog_about = UI("dialog_about")
 
     def define_variables(self):
         # Boolean model backing every settings switch (and the global toggle).
         self.preferences = Settings.LightModeSettings()
+
+        # While "Apply to all users" is active, re-push the config to the shared
+        # location on every change (debounced to coalesce bursts).
+        self._resave_timer = 0
+        self._prevent_apply_all_toggle = False
+
+        # Serialize the privileged pushes: only one pkexec/helper runs at a time.
+        # A change arriving mid-push sets _push_dirty so exactly one follow-up
+        # push fires when the current one finishes (never stacks auth dialogs).
+        self._push_inflight = False
+        self._push_dirty = False
+        self._push_pending = True
+
+        self.preferences.connect("notify", self.on_preferences_changed)
 
     def setup_ui(self):
         # == One label + one switch per setting. ==
@@ -151,3 +181,93 @@ class MainWindow:
     def on_btn_about_clicked(self, btn):
         self.dialog_about.run()
         self.dialog_about.hide()
+
+    def on_ui_check_apply_all_toggled(self, btn):
+        if self._prevent_apply_all_toggle:
+            return
+
+        # The checkbox reflects intent; the real state is reconciled in the
+        # push callback (which reverts the box if pkexec fails/is cancelled).
+        self._apply_all_users(btn.get_active())
+
+    def on_preferences_changed(self, *_args):
+        # Only mirror changes while the checkbox is active.
+        if self._prevent_apply_all_toggle or not self.ui_check_apply_all.get_active():
+            return
+
+        if self._resave_timer:
+            GLib.source_remove(self._resave_timer)
+        self._resave_timer = GLib.timeout_add(RESAVE_DEBOUNCE_MS, self._resave_now)
+
+    def _resave_now(self):
+        self._resave_timer = 0
+        self._apply_all_users(True)
+        return False  # one-shot
+
+    def _apply_all_users(self, enable):
+        """Launch the privileged helper asynchronously so the UI never freezes
+        behind the polkit dialog. Only one helper runs at a time; a request that
+        arrives mid-push is coalesced into a single follow-up push."""
+        if self._push_inflight:
+            # Remember the latest desired state; fire it once the current one ends.
+            self._push_pending = enable
+            self._push_dirty = True
+            return
+
+        argv = ["pkexec", ACTION, "enable" if enable else "disable"]
+        flags = Gio.SubprocessFlags.STDIN_PIPE if enable else Gio.SubprocessFlags.NONE
+        try:
+            proc = Gio.Subprocess.new(argv, flags)
+        except GLib.Error as e:
+            print("{}".format(e))
+            self._on_push_failed(enable)
+            return
+
+        self._push_inflight = True
+        payload = json.dumps(self.preferences._values) if enable else None
+        proc.communicate_utf8_async(payload, None, self._on_push_done, enable)
+
+    def _on_push_done(self, proc, result, enable):
+        ok = True
+        try:
+            proc.communicate_utf8_finish(result)
+            ok = proc.get_exit_status() == 0
+        except GLib.Error as e:
+            print("{}".format(e))
+            ok = False
+
+        self._push_inflight = False
+
+        if not ok:
+            # /etc no longer matches the UI: revert the checkbox and warn, so the
+            # two never silently diverge. Drop any queued push.
+            self._push_dirty = False
+            self._on_push_failed(enable)
+            return
+
+        # Success: if changes arrived while pushing, fire exactly one follow-up.
+        if self._push_dirty:
+            self._push_dirty = False
+            self._apply_all_users(self._push_pending)
+
+    def _on_push_failed(self, enable):
+        # Revert "Apply to all users" to the opposite of the attempted action:
+        # a failed enable/re-save means it isn't really applied; a failed disable
+        # means it's still applied.
+        self._prevent_apply_all_toggle = True
+        self.ui_check_apply_all.set_active(not enable)
+        self._prevent_apply_all_toggle = False
+
+        dialog = Gtk.MessageDialog(
+            transient_for=self.window,
+            modal=True,
+            message_type=Gtk.MessageType.WARNING,
+            buttons=Gtk.ButtonsType.OK,
+            text=_("Couldn't apply settings to all users"),
+        )
+        dialog.format_secondary_text(
+            _("Authentication failed or was cancelled. The shared configuration "
+              "was not changed.")
+        )
+        dialog.run()
+        dialog.destroy()

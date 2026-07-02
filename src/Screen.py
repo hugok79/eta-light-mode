@@ -1,5 +1,6 @@
 import os
 import subprocess
+import time
 import xml.etree.ElementTree as ET
 
 from gi.repository import Gio, GLib
@@ -33,6 +34,21 @@ _DISPLAY_CONFIG_PATH = "/org/cinnamon/Muffin/DisplayConfig"
 
 _display_config_proxy = None
 
+# At login, `eta-light-mode --apply-config` can fire from the autostart entry
+# before Muffin's DisplayConfig service has claimed its name on the session bus.
+# Without waiting, GetCurrentState fails and the resolution/refresh settings
+# silently no-op (and don't persist). Wait a bounded time for the service.
+_DISPLAY_CONFIG_WAIT_TRIES = 20
+_DISPLAY_CONFIG_WAIT_INTERVAL = 0.5  # seconds -> up to ~10s total
+
+
+def _wait_for_display_config(proxy):
+    for _ in range(_DISPLAY_CONFIG_WAIT_TRIES):
+        if proxy.get_name_owner() is not None:
+            return True
+        time.sleep(_DISPLAY_CONFIG_WAIT_INTERVAL)
+    return proxy.get_name_owner() is not None
+
 
 def _get_display_config_proxy():
     global _display_config_proxy
@@ -46,6 +62,10 @@ def _get_display_config_proxy():
             _DISPLAY_CONFIG_NAME,
             None,
         )
+        # Only blocks when the compositor isn't up yet (login race); interactive
+        # use always has an owner, so this returns immediately.
+        if _display_config_proxy.get_name_owner() is None:
+            _wait_for_display_config(_display_config_proxy)
     return _display_config_proxy
 
 

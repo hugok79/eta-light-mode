@@ -36,6 +36,16 @@ install_data(
     ['xsession/50-eta-light-mode-resolution'],
     install_dir: xsession_dir,
 )
+## System-wide autostart template (copied to /etc/xdg/autostart by Action.py)
+install_data(
+    ['data/tr.org.eta.light-mode-autostart.desktop'],
+    install_dir: join_paths(source_dir, 'data'),
+)
+## Polkit policy for the "Apply to all users" privileged helper (Action.py)
+install_data(
+    ['data/tr.org.eta.light-mode.policy'],
+    install_dir: join_paths(share, 'polkit-1', 'actions'),
+)
 ## Sources
 install_subdir('src', install_dir: source_dir)
 install_subdir('ui', install_dir: source_dir)
@@ -47,3 +57,9 @@ install_subdir(
 
 ## Binary
 install_data(['eta-light-mode'], install_dir: binary_dir)
+
+## Ensure the pkexec helper is executable (pkexec runs the path directly)
+meson.add_install_script(
+    'sh', '-c',
+    'chmod 0755 "$MESON_INSTALL_DESTDIR_PREFIX/share/eta/eta-light-mode/src/Action.py"',
+)

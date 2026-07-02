@@ -1,0 +1,13 @@
+[Desktop Entry]
+Name=ETA Light Mode Enabler
+Name[tr]=ETA Hafif Mod Aktifleştirici
+Comment=Enables light mode on login
+Comment[tr]=Oturum açıldığında hafif modu aktifleştirir
+
+Exec=eta-light-mode --apply-config
+
+Type=Application
+NoDisplay=true
+Terminal=false
+StartupNotify=false
+X-GNOME-Autostart-enabled=true

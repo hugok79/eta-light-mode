@@ -1,8 +1,13 @@
+import json
+import os
+from locale import gettext as _
+
 from gi.repository import GObject  # noqa
 
-from locale import gettext as _
 import Cinnamon
 import Screen
+
+SETTINGS_FILE_PATH = "/etc/eta-light-mode/settings.json"
 
 # == Settings model ==
 # Every entry becomes a boolean GObject property on LightModeSettings.
@@ -119,11 +124,38 @@ class LightModeSettings(GObject.Object):
 
     def do_set_property(self, prop, value):
         value = bool(value)
+        # Skip no-op sets: prevents redundant Cinnamon/Screen writes and a
+        # "notify" storm when set_all() sweeps every property (master switch).
         if self._values.get(prop.name) == value:
             return
         self._values[prop.name] = value
         _SETTINGS_BY_NAME[prop.name]["apply"](value)
 
+        print(f"{prop.name} is set:{value}")
+
     def set_all(self, value):
         for name in self._values:
             self.set_property(name, value)
+
+    def save(self, path):
+        with open(path, "w") as f:
+            json.dump(self._values, f)
+
+    def load_and_apply(self, path):
+        if not os.path.exists(path):
+            return
+
+        with open(path) as f:
+            data = json.load(f)
+
+        # Apply each key independently so one bad/removed/failed setting can't
+        # abort the rest (e.g. a stale key from an older version). Unknown keys
+        # are skipped rather than raising through set_property.
+        for name, val in data.items():
+            if name not in _SETTINGS_BY_NAME:
+                print(f"Skipping unknown setting: {name}")
+                continue
+            try:
+                self.set_property(name, val)
+            except Exception as e:
+                print(f"Couldn't apply {name}: {e}")
