@@ -12,6 +12,11 @@ RESOLUTION_NORMAL = (1920, 1080)
 REFRESH_RATE_LOW = 50.0
 REFRESH_RATE_NORMAL = 60.0
 
+# Scaling is not a toggle: set_mode always applies 100%, so any resolution or
+# refresh rate change resets it (reset_scale() re-applies the current mode when
+# nothing else changed).
+SCALE_NORMAL = 1.0
+
 # Refresh rates are reported with jitter (e.g. 59.94 instead of 60.0), so we
 # match against the midpoint instead of comparing for equality.
 _REFRESH_MIDPOINT = (REFRESH_RATE_LOW + REFRESH_RATE_NORMAL) / 2
@@ -169,7 +174,9 @@ def set_mode(width, height, refresh_rate, second_try=False) -> bool:
         serial, monitors, logical_monitors, props = _get_current_state()
 
         new_logical_monitors = []
-        for x, y, scale, transform, primary, lm_monitors, lprops in logical_monitors:
+        # scale is deliberately dropped: every mode change resets scaling to
+        # SCALE_NORMAL (100%) -- see the module docstring above.
+        for x, y, _scale, transform, primary, lm_monitors, lprops in logical_monitors:
             assignments = []
             for monitor_spec in lm_monitors:
                 connector = monitor_spec[0]
@@ -195,7 +202,7 @@ def set_mode(width, height, refresh_rate, second_try=False) -> bool:
                     mode_id = mode[0]
                     applied_rate = mode[3]
                     primary_spec = monitor_spec
-                    primary_logical = (int(x), int(y), float(scale))
+                    primary_logical = (int(x), int(y), SCALE_NORMAL)
                 else:
                     mode_id = _current_mode_id(monitors, connector)
                     if mode_id is None:
@@ -205,7 +212,7 @@ def set_mode(width, height, refresh_rate, second_try=False) -> bool:
                 (
                     int(x),
                     int(y),
-                    float(scale),
+                    SCALE_NORMAL,
                     int(transform),
                     bool(primary),
                     assignments,
@@ -231,8 +238,8 @@ def set_mode(width, height, refresh_rate, second_try=False) -> bool:
     except GLib.Error:
         return False
 
-    # The live change succeeded; persist it ourselves (a write failure is
-    # non-fatal -- the mode is already applied for this session).
+    # The live change succeeded; persist it ourselves (mode + <scale>1</scale>);
+    # a write failure is non-fatal -- the mode is already applied for this session.
     if primary_spec is not None:
         _write_monitors_xml(primary_spec, primary_logical, width, height, applied_rate)
     return True
@@ -253,6 +260,16 @@ def set_refresh_rate(low: bool) -> bool:
     refresh_rate = REFRESH_RATE_LOW if low else REFRESH_RATE_NORMAL
     resolution = get_resolution() or RESOLUTION_NORMAL
     return set_mode(resolution[0], resolution[1], refresh_rate)
+
+
+def reset_scale() -> bool:
+    """Re-apply the current mode, which resets scaling to 100% (set_mode always
+    forces SCALE_NORMAL). Needed because the settings model skips no-op writes,
+    so flipping the master switch doesn't necessarily reach set_mode."""
+    current = _get_current_mode()
+    if current is None:
+        return False
+    return set_mode(current[0], current[1], current[2])
 
 
 def is_low_resolution() -> bool:
@@ -308,24 +325,28 @@ def _write_monitors_xml(spec, logical, width, height, rate):
             root = ET.Element("monitors", version="2")
             tree = ET.ElementTree(root)
 
-        # Update the configuration whose monitor matches this EDID spec, if any.
+        # Update the logical monitor whose monitor matches this EDID spec, if any.
         found = False
         for configuration in root.findall("configuration"):
-            for monitor in configuration.findall(".//monitor"):
-                mspec = monitor.find("monitorspec")
-                if mspec is None:
-                    continue
-                if (
-                    mspec.findtext("connector") == connector
-                    and mspec.findtext("vendor") == vendor
-                    and mspec.findtext("product") == product
-                    and mspec.findtext("serial") == serial
-                ):
-                    _set_mode_element(monitor, width, height, rate)
-                    sc = configuration.find(".//logicalmonitor/scale")
-                    if sc is not None:
+            for logicalmonitor in configuration.findall("logicalmonitor"):
+                for monitor in logicalmonitor.findall("monitor"):
+                    mspec = monitor.find("monitorspec")
+                    if mspec is None:
+                        continue
+                    if (
+                        mspec.findtext("connector") == connector
+                        and mspec.findtext("vendor") == vendor
+                        and mspec.findtext("product") == product
+                        and mspec.findtext("serial") == serial
+                    ):
+                        _set_mode_element(monitor, width, height, rate)
+                        sc = logicalmonitor.find("scale")
+                        if sc is None:
+                            sc = ET.SubElement(logicalmonitor, "scale")
                         sc.text = _fmt_scale(scale)
-                    found = True
+                        found = True
+                        break
+                if found:
                     break
             if found:
                 break

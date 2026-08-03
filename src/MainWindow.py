@@ -12,6 +12,7 @@ from gi.repository import Gio, GLib, GObject, Gtk, Gdk  # noqa
 
 from locale import gettext as _
 
+import Screen
 import Settings
 
 CWD = os.path.dirname(os.path.abspath(__file__))
@@ -147,6 +148,10 @@ class MainWindow:
     def toggle_light_mode(self, state):
         # Flip every property
         self.preferences.set_all(state)
+
+        # set_mode already forces 100% scaling, but set_all() skips no-op
+        # writes, so it may never run: re-apply the current mode to be sure.
+        Screen.reset_scale()
 
         label = _("Active") if state else _("Disabled")
         self.ui_status_label.set_label(label)
