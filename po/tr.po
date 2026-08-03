@@ -5,8 +5,8 @@ msgid ""
 msgstr ""
 "Project-Id-Version: 0.1.0\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2026-06-09 12:53+0300\n"
-"PO-Revision-Date: 2026-06-09 12:42+0300\n"
+"POT-Creation-Date: 2026-08-03 11:45+0300\n"
+"PO-Revision-Date: 2026-08-03 11:47+0300\n"
 "Last-Translator: Emin Fedar <emin.fedar@pardus.org.tr>\n"
 "Language-Team: Türkçe\n"
 "Language: TR\n"
@@ -31,66 +31,83 @@ msgstr "Hafif Mod"
 msgid "Lighten your system"
 msgstr "Sisteminizi hafifleştirin"
 
-#: ui/MainWindow.glade:92 src/MainWindow.py:65 src/MainWindow.py:114
+#: ui/MainWindow.glade:92 src/MainWindow.py:73 src/MainWindow.py:151
 msgid "Disabled"
 msgstr "Devre Dışı"
 
-#: ui/MainWindow.glade:154
+#: ui/MainWindow.glade:134
+msgid "Apply to all users"
+msgstr "Tüm kullanıcılara uygula"
+
+#: ui/MainWindow.glade:138
+msgid "Applies this configuration to all users"
+msgstr "Ayarları tüm kullanıcılar için otomatik uygular"
+
+#: ui/MainWindow.glade:180
 msgid "Details"
 msgstr "Detaylar"
 
-#: ui/MainWindow.glade:200
+#: ui/MainWindow.glade:226
 msgid "Lighten your Cinnamon DE with one click"
 msgstr "Cinnamon Masaüstünüzü tek tıkla hafifletin"
 
-#: ui/MainWindow.glade:203
+#: ui/MainWindow.glade:229
 msgid "translator_credits"
 msgstr "Emin Fedar"
 
-#: src/MainWindow.py:65 src/MainWindow.py:114
+#: src/MainWindow.py:73 src/MainWindow.py:151
 msgid "Active"
 msgstr "Aktif"
 
-#: src/Settings.py:20
+#: src/MainWindow.py:266
+msgid "Couldn't apply settings to all users"
+msgstr "Ayarlar tüm kullanıcılara uygulanamadı"
+
+#: src/MainWindow.py:269
+msgid ""
+"Authentication failed or was cancelled. The shared configuration was not "
+"changed."
+msgstr ""
+"Yetkilendirme başarısız veya iptal edildi. Ortak ayarlar değiştirilmedi."
+
+#: src/Settings.py:25
 msgid "Disable Effects"
 msgstr "Efektleri Kapat"
 
-#: src/Settings.py:26
+#: src/Settings.py:31
 msgid "Direct Render Fullscreen Windows"
 msgstr "Tam Ekranları Direkt Çiz"
 
-#: src/Settings.py:32
+#: src/Settings.py:37
 msgid "Disable Image Thumbnails"
 msgstr "Resim Önizlemelerini Kapat"
 
-#: src/Settings.py:38
+#: src/Settings.py:43
 msgid "Disable Folder Item Counts"
 msgstr "Klasör Dosyalarını Sayma"
 
-#: src/Settings.py:44
+#: src/Settings.py:49
 msgid "Disable Cinnamon Monitoring"
 msgstr "Cinnamon Monitoring'i Kapat"
 
-#: src/Settings.py:50
+#: src/Settings.py:55
 msgid "Reduce Text Size"
 msgstr "Yazı Boyutunu Düşür"
 
-#: src/Settings.py:58
-msgid "Reduce Panel Height"
-msgstr "Panel Yüksekliğini Düşür"
-
-#: src/Settings.py:66
-msgid "Reduce Panel Icon Size"
-msgstr "Panel İkon Boyutunu Düşür"
-
-#: src/Settings.py:75
+#: src/Settings.py:80
 msgid "Smaller File & Desktop Icons"
 msgstr "Dosya ve Masaüstü İkonlarını Küçült"
 
-#: src/Settings.py:84
+#: src/Settings.py:89
 msgid "Reduce Resolution (1600x900)"
 msgstr "Çözünürlüğü Düşür (1600x900)"
 
-#: src/Settings.py:90
+#: src/Settings.py:95
 msgid "Reduce Refresh Rate (50 Hz)"
 msgstr "Yenilenme Hızını Düşür (50 Hz)"
+
+#~ msgid "Reduce Panel Height"
+#~ msgstr "Panel Yüksekliğini Düşür"
+
+#~ msgid "Reduce Panel Icon Size"
+#~ msgstr "Panel İkon Boyutunu Düşür"
