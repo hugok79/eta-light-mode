@@ -1,8 +1,10 @@
-eta-light-mode (0.2.3) UNRELEASED; urgency=medium
+eta-light-mode (0.2.3) yirmiuc; urgency=medium
 
   * feat: apply to all users
+  * fix: reset scale to %100 everytime apply settings
+  * fix: translations
 
- -- Emin Fedar <emin.fedar@pardus.org.tr>  Thu, 02 Jul 2026 15:40:34 +0300
+ -- Emin Fedar <emin.fedar@pardus.org.tr>  Mon, 03 Aug 2026 13:45:32 +0300
 
 eta-light-mode (0.2.2) yirmiuc; urgency=medium
 
