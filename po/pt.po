@@ -1,0 +1,107 @@
+# SOME DESCRIPTIVE TITLE.
+# Copyright (C) YEAR THE PACKAGE'S COPYRIGHT HOLDER
+# This file is distributed under the same license as the PACKAGE package.
+# Hugo Carvalho <hugokarvalho@hotmail.com>, 2026.
+#
+#, fuzzy
+msgid ""
+msgstr ""
+"Project-Id-Version: \n"
+"Report-Msgid-Bugs-To: \n"
+"POT-Creation-Date: 2026-09-11 10:11+0100\n"
+"PO-Revision-Date: 2026-09-11 10:25+0100\n"
+"Last-Translator: Hugo Carvalho <hugokarvalho@hotmail.com>\n"
+"Language-Team: \n"
+"Language: pt_PT\n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=UTF-8\n"
+"Content-Transfer-Encoding: 8bit\n"
+"X-Generator: Poedit 3.4.2\n"
+
+#: ui/MainWindow.glade:7
+msgid "ETA Light Mode"
+msgstr "Modo Leve ETA"
+
+#: ui/MainWindow.glade:52
+msgid "Light Mode"
+msgstr "Modo leve"
+
+#: ui/MainWindow.glade:68
+msgid "Lighten your system"
+msgstr "Torne o seu sistema mais leve"
+
+#: ui/MainWindow.glade:92 src/MainWindow.py:74 src/MainWindow.py:156
+msgid "Disabled"
+msgstr "Desativado"
+
+#: ui/MainWindow.glade:134
+msgid "Apply to all users"
+msgstr "Aplicar a todos os utilizadores"
+
+#: ui/MainWindow.glade:138
+msgid "Applies this configuration to all users"
+msgstr "Aplica esta configuração a todos os utilizadores"
+
+#: ui/MainWindow.glade:180
+msgid "Details"
+msgstr "Detalhes"
+
+#: ui/MainWindow.glade:226
+msgid "Lighten your Cinnamon DE with one click"
+msgstr "Torne o seu Cinnamon DE mais leve com um clique"
+
+#: ui/MainWindow.glade:229
+msgid "translator_credits"
+msgstr "Hugo Carvalho <hugokarvalho@hotmail.com>"
+
+#: src/MainWindow.py:74 src/MainWindow.py:156
+msgid "Active"
+msgstr "Ativo"
+
+#: src/MainWindow.py:271
+msgid "Couldn't apply settings to all users"
+msgstr "Não foi possível aplicar as definições a todos os utilizadores"
+
+#: src/MainWindow.py:274
+msgid ""
+"Authentication failed or was cancelled. The shared configuration was not "
+"changed."
+msgstr ""
+"Falha na autenticação ou foi cancelada. A configuração partilhada não "
+"foi alterada."
+
+#: src/Settings.py:25
+msgid "Disable Effects"
+msgstr "Desativar efeitos"
+
+#: src/Settings.py:31
+msgid "Direct Render Fullscreen Windows"
+msgstr "Janelas em ecrã inteiro com renderização direta"
+
+#: src/Settings.py:37
+msgid "Disable Image Thumbnails"
+msgstr "Desativar miniaturas de imagens"
+
+#: src/Settings.py:43
+msgid "Disable Folder Item Counts"
+msgstr "Desativar a contagem de itens nas pastas"
+
+#: src/Settings.py:49
+msgid "Disable Cinnamon Monitoring"
+msgstr "Desativar a monitorização do Cinnamon"
+
+#: src/Settings.py:55
+msgid "Reduce Text Size"
+msgstr "Reduzir o tamanho do texto"
+
+#: src/Settings.py:80
+msgid "Smaller File & Desktop Icons"
+msgstr "Ícones de ficheiros e da área de trabalho mais pequenos"
+
+#: src/Settings.py:89
+msgid "Reduce Resolution (1600x900)"
+msgstr "Reduzir a resolução (1600x900)"
+
+#: src/Settings.py:95
+msgid "Reduce Refresh Rate (50 Hz)"
+msgstr "Reduzir a taxa de atualização (50 Hz)"
