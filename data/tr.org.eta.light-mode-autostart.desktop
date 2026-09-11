@@ -1,7 +1,9 @@
 [Desktop Entry]
 Name=ETA Light Mode Enabler
+Name[pt]=Ativador do Modo Leve do ETA
 Name[tr]=ETA Hafif Mod Aktifleştirici
 Comment=Enables light mode on login
+Comment[pt]=Ativa o modo leve ao iniciar sessão
 Comment[tr]=Oturum açıldığında hafif modu aktifleştirir
 
 Exec=eta-light-mode --apply-config

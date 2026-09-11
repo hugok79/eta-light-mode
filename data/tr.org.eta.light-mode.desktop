@@ -1,7 +1,9 @@
 [Desktop Entry]
 Name=ETA Light Mode
+Name[pt]=Modo Leve ETA
 Name[tr]=ETA Hafif Mod
 Comment=Make your system lighter with one click.
+Comment[pt]=Torne o seu sistema mais leve com um clique
 Comment[tr]=Sisteminizi tek tıkla hafifletin.
 
 Categories=System;X-Pardus-Apps;
