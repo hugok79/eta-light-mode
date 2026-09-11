@@ -1,6 +1,6 @@
 #!/bin/bash
 
-langs=("tr")
+langs=("pt" "tr")
 APP_NAME="eta-light-mode"
 
 if ! command -v xgettext &> /dev/null
